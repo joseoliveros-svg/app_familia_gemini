@@ -14,7 +14,7 @@ st.set_page_config(
 
 # Copia aquí la URL exacta de tu aplicación en Streamlit Cloud (sin la barra '/' al final)
 # Ejemplo: "https://tu-app-familia.streamlit.app"
-DIRECCION_RETORNO = "https://tu-app-familia.streamlit.app" 
+DIRECCION_RETORNO = "https://appfamiliagemini.streamlit.app" 
 
 # Estilos CSS para imitar tu diseño (botones amigables y fotos redondas)
 st.markdown("""
