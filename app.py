@@ -12,11 +12,10 @@ st.set_page_config(
     layout="centered"
 )
 
-# Copia aquí la URL exacta de tu aplicación en Streamlit Cloud (sin la barra '/' al final)
-# Ejemplo: "https://tu-app-familia.streamlit.app"
-DIRECCION_RETORNO = "https://appfamiliagemini.streamlit.app" 
+# URL Real y definitiva entregada por Streamlit con la barra '/' al final
+DIRECCION_RETORNO = "https://appfamiliagemini.streamlit.app/" 
 
-# Estilos CSS para imitar tu diseño (botones amigables y fotos redondas)
+# Estilos CSS personalizados para el diseño móvil y botones del portal
 st.markdown("""
     <style>
     div[data-testid="stSidebar"] img {
@@ -38,7 +37,7 @@ SCOPES = [
     "https://www.googleapis.com/auth/userinfo.email"
 ]
 
-# FUNCIÓN DE AUTENTICACIÓN DIRECTA POR SECRETS (Evita el error 403 y FileNotFound)
+# FUNCIÓN DE AUTENTICACIÓN DIRECTA POR SECRETS
 @st.cache_resource
 def obtener_configuracion_oauth():
     try:
@@ -116,11 +115,10 @@ if st.session_state.usuario is None:
 
 else:
     # ==========================================
-    # PANTALLA INTERIOR (Tu diseño plasmado)
+    # PANTALLA INTERIOR (Tu diseño de pestañas)
     # ==========================================
     perfil = st.session_state.usuario
     
-    # 1. BARRA LATERAL (Sidebar)
     with st.sidebar:
         st.markdown("### 👤 Mi Cuenta")
         if "picture" in perfil:
@@ -129,55 +127,38 @@ else:
         st.write(f"**{perfil.get('name')}**")
         st.write(f"✉️ {perfil.get('email')}")
         st.markdown("---")
-        
-        # Opciones informativas extra en el menú
-        st.caption("Asistente legal entrenado para Juzgados de Familia de Chile (Poder Judicial).")
+        st.caption("Asistente legal entrenado para Juzgados de Familia de Chile.")
         
         if st.button("Cerrar Sesión"):
             st.session_state.usuario = None
             st.query_params.clear()
             st.rerun()
             
-    # 2. ENCABEZADO PRINCIPAL (Tal como tu boceto)
     st.title("🤖 Asistente Virtual IA")
     st.subheader("Tribunales de Familia Chile")
     st.markdown("---")
     
-    # 3. PESTAÑAS DE TRABAJO (Tabs ordenadas)
+    # Creación de pestañas basadas en tu bosquejo
     tab1, tab2, tab3 = st.tabs(["📄 Explicar Escrito", "📚 Resumir E-book", "✍️ Preparar Escrito"])
     
-    # PESTAÑA 1: EXPLICAR ESCRITO
     with tab1:
         st.markdown("#### Sube una notificación o resolución de la causa")
         archivo_escrito = st.file_uploader("Cargar documento judicial (PDF)", type=["pdf"], key="escrito_pdf")
-        
         if archivo_escrito:
-            st.success("✅ Escrito cargado con éxito en el sistema.")
-            # Caja contenedora del resultado (Mismo estilo que tu imagen)
-            with st.container():
-                st.markdown("### 🤖 Análisis del documento:")
-                st.info("Aquí aparecerá la explicación de Gemini en lenguaje simple (Ej: plazos, qué exige el juez, próximos pasos).")
+            st.success("✅ Escrito cargado con éxito.")
+            st.info("Aquí aparecerá el análisis de Gemini una vez que conectemos el motor de IA.")
                 
-    # PESTAÑA 2: RESUMIR E-BOOK
     with tab2:
         st.markdown("#### Sube material doctrinal o un libro legal largo")
         archivo_ebook = st.file_uploader("Cargar e-book o ley (PDF)", type=["pdf"], key="ebook_pdf")
-        
         if archivo_ebook:
             st.success("✅ Libro recibido por el asistente.")
-            with st.container():
-                st.markdown("### 🤖 Puntos clave del libro:")
-                st.info("Aquí aparecerá el resumen estructurado de las materias o capítulos procesados por la IA.")
+            st.info("Aquí aparecerá el resumen del libro procesado por la IA.")
 
-    # PESTAÑA 3: PREPARAR ESCRITO
     with tab3:
         st.markdown("#### Generador de borradores legales")
-        st.write("Cuéntale a la IA qué necesitas solicitarle al tribunal (Ej: solicitar liquidación de pensión, entablar medida cautelar, etc.):")
-        instruccion = st.text_area("Detalla tu solicitud aquí:")
-        
+        st.write("Cuéntale a la IA qué necesitas solicitarle al tribunal:")
+        instruccion = st.text_area("Detalla tu solicitud aquí (Ej: Solicito liquidación de pensión de alimentos):")
         if st.button("Generar Borrador con IA"):
             if instruccion:
-                st.markdown("### 📝 Borrador sugerido:")
-                st.success("Aquí Gemini redactará la plantilla formal con la estructura legal chilena ('SUMILLA', 'AL JUZGADO DE FAMILIA...', 'POR TANTO...').")
-            else:
-                st.warning("Por favor, escribe una instrucción primero.")
+                st.success("Aquí Gemini redactará la plantilla formal con la estructura legal chilena.")
