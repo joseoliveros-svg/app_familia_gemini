@@ -1,5 +1,6 @@
 import streamlit as st
 import os
+import json
 from dotenv import load_dotenv
 from google_auth_oauthlib.flow import Flow
 from google.oauth2 import id_token
@@ -11,17 +12,14 @@ load_dotenv()
 # Configuración base de la página para computadores y móviles
 st.set_page_config(page_title="Portal Familia Chile", page_icon="⚖️", layout="centered")
 
-# DETECCIÓN DINÁMICA DEL ENTORNO (Local, Celular o Servidor publicado)
-# 1. Revisa si la app está corriendo en los servidores de Streamlit Cloud
+# DETECCIÓN DINÁMICA DE LA URL DE RETORNO
 if "STREAMLIT_SERVER_PORT" in os.environ:
-    # Cuando lo publiques, reemplaza esta URL por la real que te asigne el servidor
+    # IMPORTANTE: Reemplaza esta URL por la real que te asignó Streamlit Cloud
     DIRECCION_RETORNO = "https://tu-app-familia.streamlit.app" 
 else:
-    # 2. Si estás en tu casa, puedes alternar entre estas dos líneas:
     DIRECCION_RETORNO = "http://localhost:8501"
-    # DIRECCION_RETORNO = "http://192.168.1.XX:8501" # Descomenta y pon tu IP para probar en el celular local
 
-# TRUCO CSS: Estilos globales para la interfaz
+# TRUCO CSS: Estilos globales para la interfaz y fotos circulares
 st.markdown("""
     <style>
     div[data-testid="stSidebar"] img {
@@ -41,12 +39,12 @@ SCOPES = [
     "https://www.googleapis.com/auth/userinfo.email"
 ]
 
-# Función protegida por caché para mantener congelado el verificador de seguridad de Google (PKCE)
+# FUNCIÓN INTELIGENTE PROTEGIDA POR CACHÉ
 @st.cache_resource
 def obtener_configuracion_oauth():
-    # Si la app está en internet, crea las credenciales usando el Secreto que guardamos
+    # Si la app está ejecutándose en internet (Streamlit Cloud)
     if "STREAMLIT_SERVER_PORT" in os.environ:
-        import json
+        # Carga las credenciales desde los Secrets que guardamos en el panel lateral
         info_secrets = json.loads(st.secrets["CLIENT_SECRET_JSON"])
         return Flow.from_client_config(
             info_secrets,
@@ -54,7 +52,7 @@ def obtener_configuracion_oauth():
             redirect_uri=DIRECCION_RETORNO
         )
     else:
-        # Si estás en tu computador local, sigue buscando el archivo normal
+        # Si estás en tu computador local, busca el archivo normal
         return Flow.from_client_secrets_file(
             "client_secret.json",
             scopes=SCOPES,
@@ -89,9 +87,6 @@ if "code" in parametros_url and st.session_state.usuario is None:
 # --- 4. RENDERIZADO DE INTERFAZ (PANTALLAS) ---
 
 if st.session_state.usuario is None:
-    # ==========================================
-    # PANTALLA A: ACCESO (Usuario Desconectado)
-    # ==========================================
     st.title("⚖️ Asistente Judicial de Familia")
     st.markdown("### Portal de comprensión de procedimientos judiciales - Chile")
     st.write("Para resguardar la confidencialidad de tus escritos y e-books, por favor ingresa con tu cuenta de Google.")
@@ -99,23 +94,14 @@ if st.session_state.usuario is None:
     flow = obtener_configuracion_oauth()
     url_autorizacion, _ = flow.authorization_url(prompt='select_account', access_type='offline')
     
+    # Botón HTML con el logo de Google en SVG integrado
     st.markdown(f"""
         <a href="{url_autorizacion}" target="_self" style="text-decoration: none;">
             <div style="
-                width: 100%; 
-                background-color: #ffffff; 
-                color: #202124; 
-                border: 1px solid #dadce0; 
-                padding: 12px; 
-                border-radius: 8px; 
-                font-size: 16px; 
-                font-weight: 500;
-                font-family: 'Roboto', sans-serif;
-                cursor: pointer; 
-                display: flex; 
-                align-items: center; 
-                justify-content: center; 
-                gap: 12px;
+                width: 100%; background-color: #ffffff; color: #202124; border: 1px solid #dadce0; 
+                padding: 12px; border-radius: 8px; font-size: 16px; font-weight: 500;
+                font-family: 'Roboto', sans-serif; cursor: pointer; display: flex; 
+                align-items: center; justify-content: center; gap: 12px;
                 box-shadow: 0 1px 3px rgba(0,0,0,0.08);
             ">
                 <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="18px" height="18px" viewBox="0 0 48 48">
@@ -133,9 +119,6 @@ if st.session_state.usuario is None:
     """, unsafe_allow_html=True)
 
 else:
-    # ==========================================
-    # PANTALLA B: PANEL (Usuario Conectado)
-    # ==========================================
     perfil = st.session_state.usuario
     
     with st.sidebar:
@@ -155,7 +138,4 @@ else:
     st.title("🏠 Panel de Control Legal")
     st.success(f"¡Bienvenido(a) {perfil.get('given_name')}! Autenticación completada con éxito.")
     st.markdown("---")
-    
-    # --- ESPACIO MAQUETA DINÁMICA ---
-    st.write("El sistema de acceso multiplataforma está listo.")
-    st.info("Ya logré procesar la imagen de la interfaz que subiste en la interacción anterior. ¿Te gustaría que construyamos ahora mismo las pestañas y secciones interiores basándonos en tu diseño?")
+    st.write("El sistema multiplataforma está listo en la nube.")
