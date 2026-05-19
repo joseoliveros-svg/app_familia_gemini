@@ -6,13 +6,17 @@ from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 
 # --- 1. CONFIGURACIÓN BASE DE LA PÁGINA ---
-st.set_page_config(page_title="Portal Familia Chile", page_icon="⚖️", layout="centered")
+st.set_page_config(
+    page_title="Asistente Judicial - Juzgados de Familia", 
+    page_icon="⚖️", 
+    layout="centered"
+)
 
-# IMPORTANTE: Reemplaza esta URL por la dirección real que te dio Streamlit Cloud.
-# Debe terminar en '.streamlit.app' sin barras '/' al final.
-DIRECCION_RETORNO = "https://appfamiliagemini.streamlit.app/" 
+# Copia aquí la URL exacta de tu aplicación en Streamlit Cloud (sin la barra '/' al final)
+# Ejemplo: "https://tu-app-familia.streamlit.app"
+DIRECCION_RETORNO = "https://tu-app-familia.streamlit.app" 
 
-# Estilos visuales para celulares y fotos redondas
+# Estilos CSS para imitar tu diseño (botones amigables y fotos redondas)
 st.markdown("""
     <style>
     div[data-testid="stSidebar"] img {
@@ -22,6 +26,8 @@ st.markdown("""
     .stButton>button {
         width: 100%;
         border-radius: 8px;
+        background-color: #2e59a8;
+        color: white;
     }
     </style>
     """, unsafe_allow_html=True)
@@ -32,11 +38,10 @@ SCOPES = [
     "https://www.googleapis.com/auth/userinfo.email"
 ]
 
-# FUNCIÓN PROTEGIDA: Lee únicamente desde los Secrets del servidor en internet
+# FUNCIÓN DE AUTENTICACIÓN DIRECTA POR SECRETS (Evita el error 403 y FileNotFound)
 @st.cache_resource
 def obtener_configuracion_oauth():
     try:
-        # Busca el secreto que guardamos en el panel lateral oscuro de Streamlit
         info_secrets = json.loads(st.secrets["CLIENT_SECRET_JSON"])
         return Flow.from_client_config(
             info_secrets,
@@ -44,14 +49,13 @@ def obtener_configuracion_oauth():
             redirect_uri=DIRECCION_RETORNO
         )
     except Exception as e:
-        st.error(f"Error al leer las credenciales secretas de Google: {e}")
+        st.error(f"Error al cargar configuraciones secretas: {e}")
         return None
 
-# --- 2. MANEJO DE MEMORIA DE SESIÓN ---
+# --- 2. GESTIÓN DE SESIÓN ---
 if "usuario" not in st.session_state:
     st.session_state.usuario = None
 
-# --- 3. CAPTURAR EL RETORNO DESDE GOOGLE ---
 parametros_url = st.query_params
 
 if "code" in parametros_url and st.session_state.usuario is None:
@@ -60,32 +64,31 @@ if "code" in parametros_url and st.session_state.usuario is None:
         if flow is not None:
             flow.fetch_token(code=parametros_url["code"])
             credenciales = flow.credentials
-            
             datos_perfil = id_token.verify_oauth2_token(
                 credenciales.id_token,
                 google_requests.Request(),
                 flow.client_config["client_id"]
             )
-            
             st.session_state.usuario = datos_perfil
             st.query_params.clear() 
             st.rerun()
     except Exception as e:
-        st.error(f"Error en la pasarela de acceso: {e}")
+        st.error(f"Error en acceso seguro: {e}")
 
-# --- 4. INTERFAZ GRÁFICA (PANTALLAS) ---
+# --- 3. DIBUJAR PANTALLAS ---
 
 if st.session_state.usuario is None:
-    # PANTALLA DE ACCESO
+    # ==========================================
+    # PANTALLA ACCESO (Desconectado)
+    # ==========================================
     st.title("⚖️ Asistente Judicial de Familia")
-    st.markdown("### Portal de comprensión de procedimientos judiciales - Chile")
-    st.write("Para resguardar la confidencialidad de tus escritos, por favor ingresa con tu cuenta de Google.")
+    st.markdown("### Portal IA para la comprensión de procedimientos en Chile")
+    st.write("Para resguardar la privacidad de tus causas, escritos y e-books, ingresa con Google.")
     
     flow = obtener_configuracion_oauth()
     if flow is not None:
         url_autorizacion, _ = flow.authorization_url(prompt='select_account', access_type='offline')
         
-        # Botón con logo de Google vectorizado
         st.markdown(f"""
             <a href="{url_autorizacion}" target="_self" style="text-decoration: none;">
                 <div style="
@@ -109,26 +112,72 @@ if st.session_state.usuario is None:
             <br>
         """, unsafe_allow_html=True)
     else:
-        st.warning("Configuración en progreso. Asegúrate de haber guardado tus 'Secrets' en el panel de Streamlit.")
+        st.warning("Verifica la carga del secreto CLIENT_SECRET_JSON en el panel de Streamlit.")
 
 else:
-    # PANTALLA DEL PANEL PRINCIPAL
+    # ==========================================
+    # PANTALLA INTERIOR (Tu diseño plasmado)
+    # ==========================================
     perfil = st.session_state.usuario
     
+    # 1. BARRA LATERAL (Sidebar)
     with st.sidebar:
-        st.markdown("### Perfil de Usuario")
+        st.markdown("### 👤 Mi Cuenta")
         if "picture" in perfil:
-            st.image(perfil["picture"], width=100)
+            st.image(perfil["picture"], width=90)
             
-        st.write(f"¡Hola, **{perfil.get('name')}**!")
-        st.write(f"📧 {perfil.get('email')}")
+        st.write(f"**{perfil.get('name')}**")
+        st.write(f"✉️ {perfil.get('email')}")
         st.markdown("---")
+        
+        # Opciones informativas extra en el menú
+        st.caption("Asistente legal entrenado para Juzgados de Familia de Chile (Poder Judicial).")
         
         if st.button("Cerrar Sesión"):
             st.session_state.usuario = None
             st.query_params.clear()
             st.rerun()
             
-    st.title("🏠 Panel de Control Legal")
-    st.success(f"¡Bienvenido(a) {perfil.get('given_name')}! Autenticación en la nube completada.")
-    st.write("Tu sistema está listo. Aquí diseñaremos las herramientas de análisis de causas de familia.")
+    # 2. ENCABEZADO PRINCIPAL (Tal como tu boceto)
+    st.title("🤖 Asistente Virtual IA")
+    st.subheader("Tribunales de Familia Chile")
+    st.markdown("---")
+    
+    # 3. PESTAÑAS DE TRABAJO (Tabs ordenadas)
+    tab1, tab2, tab3 = st.tabs(["📄 Explicar Escrito", "📚 Resumir E-book", "✍️ Preparar Escrito"])
+    
+    # PESTAÑA 1: EXPLICAR ESCRITO
+    with tab1:
+        st.markdown("#### Sube una notificación o resolución de la causa")
+        archivo_escrito = st.file_uploader("Cargar documento judicial (PDF)", type=["pdf"], key="escrito_pdf")
+        
+        if archivo_escrito:
+            st.success("✅ Escrito cargado con éxito en el sistema.")
+            # Caja contenedora del resultado (Mismo estilo que tu imagen)
+            with st.container():
+                st.markdown("### 🤖 Análisis del documento:")
+                st.info("Aquí aparecerá la explicación de Gemini en lenguaje simple (Ej: plazos, qué exige el juez, próximos pasos).")
+                
+    # PESTAÑA 2: RESUMIR E-BOOK
+    with tab2:
+        st.markdown("#### Sube material doctrinal o un libro legal largo")
+        archivo_ebook = st.file_uploader("Cargar e-book o ley (PDF)", type=["pdf"], key="ebook_pdf")
+        
+        if archivo_ebook:
+            st.success("✅ Libro recibido por el asistente.")
+            with st.container():
+                st.markdown("### 🤖 Puntos clave del libro:")
+                st.info("Aquí aparecerá el resumen estructurado de las materias o capítulos procesados por la IA.")
+
+    # PESTAÑA 3: PREPARAR ESCRITO
+    with tab3:
+        st.markdown("#### Generador de borradores legales")
+        st.write("Cuéntale a la IA qué necesitas solicitarle al tribunal (Ej: solicitar liquidación de pensión, entablar medida cautelar, etc.):")
+        instruccion = st.text_area("Detalla tu solicitud aquí:")
+        
+        if st.button("Generar Borrador con IA"):
+            if instruccion:
+                st.markdown("### 📝 Borrador sugerido:")
+                st.success("Aquí Gemini redactará la plantilla formal con la estructura legal chilena ('SUMILLA', 'AL JUZGADO DE FAMILIA...', 'POR TANTO...').")
+            else:
+                st.warning("Por favor, escribe una instrucción primero.")
