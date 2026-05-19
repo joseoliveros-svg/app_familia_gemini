@@ -1,0 +1,16 @@
+# Ignorar el entorno virtual de Python
+venv/
+.venv/
+env/
+
+# Ignorar archivos de configuración local con contraseñas
+.env
+client_secret.json
+firebase-key.json
+google_credentials.json
+
+# Ignorar archivos temporales del sistema
+__pycache__/
+*.pyc
+.DS_Store
+.streamlit/config.toml
