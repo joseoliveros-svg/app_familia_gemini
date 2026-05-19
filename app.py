@@ -44,11 +44,22 @@ SCOPES = [
 # Función protegida por caché para mantener congelado el verificador de seguridad de Google (PKCE)
 @st.cache_resource
 def obtener_configuracion_oauth():
-    return Flow.from_client_secrets_file(
-        "client_secret.json",
-        scopes=SCOPES,
-        redirect_uri=DIRECCION_RETORNO
-    )
+    # Si la app está en internet, crea las credenciales usando el Secreto que guardamos
+    if "STREAMLIT_SERVER_PORT" in os.environ:
+        import json
+        info_secrets = json.loads(st.secrets["CLIENT_SECRET_JSON"])
+        return Flow.from_client_config(
+            info_secrets,
+            scopes=SCOPES,
+            redirect_uri=DIRECCION_RETORNO
+        )
+    else:
+        # Si estás en tu computador local, sigue buscando el archivo normal
+        return Flow.from_client_secrets_file(
+            "client_secret.json",
+            scopes=SCOPES,
+            redirect_uri=DIRECCION_RETORNO
+        )
 
 # --- 2. MANEJO DE MEMORIA (SESIÓN) ---
 if "usuario" not in st.session_state:
