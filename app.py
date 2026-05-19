@@ -13,7 +13,7 @@ st.set_page_config(
 )
 
 # URL Real y definitiva entregada por Streamlit con la barra '/' al final
-DIRECCION_RETORNO = "https://appfamiliagemini.streamlit.app/" 
+DIRECCION_RETORNO = "https://appfamiliagemini.streamlit.app" 
 
 # Estilos CSS personalizados para el diseño móvil y botones del portal
 st.markdown("""
