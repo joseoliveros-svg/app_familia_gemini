@@ -10,7 +10,7 @@ st.set_page_config(page_title="Portal Familia Chile", page_icon="⚖️", layout
 
 # IMPORTANTE: Reemplaza esta URL por la dirección real que te dio Streamlit Cloud.
 # Debe terminar en '.streamlit.app' sin barras '/' al final.
-DIRECCION_RETORNO = "https://tu-app-familia.streamlit.app" 
+DIRECCION_RETORNO = "https://appfamiliagemini.streamlit.app/" 
 
 # Estilos visuales para celulares y fotos redondas
 st.markdown("""
